@@ -48,23 +48,36 @@ public class GenerateLoadController {
     public void geraEvento(int qtdConta, int qtdDias)
     {
         AtomicInteger numeroItensThread = new AtomicInteger(qtdConta/numeroThreadsProducao);
-
-        for(int i =0; i<numeroThreadsProducao;i++)
+        if(qtdConta<numeroThreadsProducao)
         {
-            int inicial = numeroItensThread.get()*i;
-            ProducerService producerService = producerServiceList.get(i);
-            if(i==numeroThreadsProducao-1)
-            {
-                numeroItensThread.addAndGet(qtdConta%numeroThreadsProducao);
-            }
+            ProducerService producerService = producerServiceList.get(0);
+            numeroItensThread.addAndGet(qtdConta);
             executorService.execute(() -> {
                 log.info("Inicializando thread {} com {} registros",Thread.currentThread().getId(),numeroItensThread.get());
-                createConta(inicial,numeroItensThread.get(),producerService,qtdDias);
+                createConta(0,numeroItensThread.get(),producerService,qtdDias);
                 log.info("Finalizando Thread thread {} ",Thread.currentThread().getId(),numeroItensThread.get());
             });
         }
+        else
+        {
+            for(int i =0; i<numeroThreadsProducao;i++)
+            {
+                int inicial = numeroItensThread.get()*i;
+                ProducerService producerService = producerServiceList.get(i);
+                if(i==numeroThreadsProducao-1)
+                {
+                    numeroItensThread.addAndGet(qtdConta%numeroThreadsProducao);
+                }
+                executorService.execute(() -> {
+                    log.info("Inicializando thread {} com {} registros",Thread.currentThread().getId(),numeroItensThread.get());
+                    createConta(inicial,numeroItensThread.get(),producerService,qtdDias);
+                    log.info("Finalizando Thread thread {} ",Thread.currentThread().getId(),numeroItensThread.get());
+                });
+            }
+        }
         executorService.shutdown();
         executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+
     }
     private UUID getIdConta(int numeroConta)
     {

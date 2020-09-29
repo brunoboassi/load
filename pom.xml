@@ -8,10 +8,10 @@
 		<version>2.3.3.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>br.com.exemplo</groupId>
-	<artifactId>load-generate</artifactId>
+	<groupId>br.com.exemplo.dataingestion</groupId>
+	<artifactId>load</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>load-generate</name>
+	<name>load</name>
 	<description>Demo project for Spring Boot</description>
 
 	<properties>
