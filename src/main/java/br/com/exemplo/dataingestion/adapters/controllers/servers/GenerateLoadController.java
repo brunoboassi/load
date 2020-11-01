@@ -1,23 +1,24 @@
 package br.com.exemplo.dataingestion.adapters.controllers.servers;
 
-import br.com.exemplo.dataingestion.adapters.events.entities.LoadEntity;
-import br.com.exemplo.dataingestion.domain.producer.ProducerService;
-import io.micrometer.core.instrument.MeterRegistry;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.annotation.PostConstruct;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
+
+import br.com.exemplo.dataingestion.adapters.events.entities.LoadEntity;
+import br.com.exemplo.dataingestion.domain.producer.ProducerService;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
@@ -28,7 +29,6 @@ public class GenerateLoadController {
 
     private ExecutorService executorService;
     private final List<ProducerService> producerServiceList;
-    private final MeterRegistry simpleMeterRegistry;
 
     @Value("${processamento.threads.producao:10}")
     private int numeroThreadsProducao;
@@ -37,7 +37,7 @@ public class GenerateLoadController {
     public void constroiProducer()
     {
         this.executorService = Executors.newFixedThreadPool(numeroThreadsProducao);
-        log.debug("Inicializando produtores");
+        log.debug("Inicializando {} produtores", numeroThreadsProducao);
         for(int i=0;i<numeroThreadsProducao;i++)
         {
             producerServiceList.add(applicationContext.getBean(ProducerService.class));

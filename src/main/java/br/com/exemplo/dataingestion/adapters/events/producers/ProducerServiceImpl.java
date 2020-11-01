@@ -1,17 +1,19 @@
 package br.com.exemplo.dataingestion.adapters.events.producers;
 
-import br.com.exemplo.dataingestion.adapters.events.entities.LoadEntity;
-import br.com.exemplo.dataingestion.domain.producer.ProducerService;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Timer;
-import lombok.RequiredArgsConstructor;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-@RequiredArgsConstructor
+import br.com.exemplo.dataingestion.adapters.events.entities.LoadEntity;
+import br.com.exemplo.dataingestion.domain.producer.ProducerService;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 @Scope(value = "prototype")
 public class ProducerServiceImpl implements ProducerService {
@@ -19,14 +21,18 @@ public class ProducerServiceImpl implements ProducerService {
     @Value("${data.ingestion.producer.topic}")
     private String producerTopic;
 
-    private final KafkaTemplate<String, LoadEntity> kafkaTemplate;
-    private final MeterRegistry simpleMeterRegistry;
+    AtomicInteger records = new AtomicInteger(0);
+
+    @Autowired
+    private KafkaTemplate<String, LoadEntity> kafkaTemplate;
+    
     @Override
     public void produce(LoadEntity loadEntity) {
-        simpleMeterRegistry.counter("kafka.contador","type","producao","thread",String.valueOf(Thread.currentThread().getId())).increment();
-        Timer.Sample sample = Timer.start(simpleMeterRegistry);
-        ProducerRecord producerRecord = new ProducerRecord(producerTopic, loadEntity);
-        sample.stop(simpleMeterRegistry.timer("kafka.time","type","producao","thread",String.valueOf(Thread.currentThread().getId())));
+        ProducerRecord<String, LoadEntity> producerRecord = new ProducerRecord<String, LoadEntity>(producerTopic, loadEntity);
         kafkaTemplate.send(producerRecord);
+        log.info(
+            "Records so far: {}", 
+            records.incrementAndGet()
+        );
     }
 }
