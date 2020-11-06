@@ -1,5 +1,6 @@
 package br.com.exemplo.dataingestion.adapters.controllers.servers;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -45,7 +46,7 @@ public class GenerateLoadController {
     }
 
     @SneakyThrows
-    public void geraEvento(int qtdConta, int qtdDias)
+    public void geraEvento(int qtdConta, int qtdDias, LocalDate termino)
     {
         AtomicInteger numeroItensThread = new AtomicInteger(qtdConta/numeroThreadsProducao);
         if(qtdConta<numeroThreadsProducao)
@@ -54,7 +55,7 @@ public class GenerateLoadController {
             numeroItensThread.addAndGet(qtdConta);
             executorService.execute(() -> {
                 log.info("Inicializando thread {} com {} registros",Thread.currentThread().getId(),numeroItensThread.get());
-                createConta(0,numeroItensThread.get(),producerService,qtdDias);
+                createConta(0,numeroItensThread.get(),producerService,qtdDias, termino);
                 log.info("Finalizando Thread thread {} ",Thread.currentThread().getId(),numeroItensThread.get());
             });
         }
@@ -70,7 +71,7 @@ public class GenerateLoadController {
                 }
                 executorService.execute(() -> {
                     log.info("Inicializando thread {} com {} registros",Thread.currentThread().getId(),numeroItensThread.get());
-                    createConta(inicial,numeroItensThread.get(),producerService,qtdDias);
+                    createConta(inicial,numeroItensThread.get(),producerService,qtdDias, termino);
                     log.info("Finalizando Thread thread {} ",Thread.currentThread().getId(),numeroItensThread.get());
                 });
             }
@@ -83,11 +84,11 @@ public class GenerateLoadController {
     {
         return UUID.nameUUIDFromBytes(StringUtils.leftPad(String.valueOf(numeroConta),12,'0').getBytes());
     }
-    private void createConta(int inicial, int quantidadeContas, ProducerService producerService,int qtdDias)
+    private void createConta(int inicial, int quantidadeContas, ProducerService producerService,int qtdDias, LocalDate termino)
     {
         for (int j = inicial;j<(inicial+quantidadeContas);j++)
         {
-            producerService.produce(LoadEntity.builder().idConta(getIdConta(j)).quantidadeDias(qtdDias).build());
+            producerService.produce(LoadEntity.builder().idConta(getIdConta(j)).quantidadeDias(qtdDias).dataFim(termino).build());
         }
     }
 }
