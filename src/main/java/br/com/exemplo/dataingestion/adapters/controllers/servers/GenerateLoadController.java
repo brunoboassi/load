@@ -46,7 +46,7 @@ public class GenerateLoadController {
     }
 
     @SneakyThrows
-    public void geraEvento(int qtdConta, int qtdDias, LocalDate termino)
+    public void geraEvento(int qtdConta, int qtdDias, LocalDate termino, boolean idPrevisivel, int idInicial)
     {
         AtomicInteger numeroItensThread = new AtomicInteger(qtdConta/numeroThreadsProducao);
         if(qtdConta<numeroThreadsProducao)
@@ -55,7 +55,7 @@ public class GenerateLoadController {
             numeroItensThread.addAndGet(qtdConta);
             executorService.execute(() -> {
                 log.info("Inicializando thread {} com {} registros",Thread.currentThread().getId(),numeroItensThread.get());
-                createConta(0,numeroItensThread.get(),producerService,qtdDias, termino);
+                createConta(idInicial, numeroItensThread.get(),producerService, qtdDias, termino, idPrevisivel);
                 log.info("Finalizando Thread thread {} ",Thread.currentThread().getId(),numeroItensThread.get());
             });
         }
@@ -71,7 +71,7 @@ public class GenerateLoadController {
                 }
                 executorService.execute(() -> {
                     log.info("Inicializando thread {} com {} registros",Thread.currentThread().getId(),numeroItensThread.get());
-                    createConta(inicial,numeroItensThread.get(),producerService,qtdDias, termino);
+                    createConta(inicial, numeroItensThread.get(),producerService, qtdDias, termino, idPrevisivel);
                     log.info("Finalizando Thread thread {} ",Thread.currentThread().getId(),numeroItensThread.get());
                 });
             }
@@ -84,11 +84,21 @@ public class GenerateLoadController {
     {
         return UUID.nameUUIDFromBytes(StringUtils.leftPad(String.valueOf(numeroConta),12,'0').getBytes());
     }
-    private void createConta(int inicial, int quantidadeContas, ProducerService producerService,int qtdDias, LocalDate termino)
+    private void createConta(int inicial, int quantidadeContas, ProducerService producerService, int qtdDias, LocalDate termino, boolean idPrevisivel)
     {
         for (int j = inicial;j<(inicial+quantidadeContas);j++)
         {
-            producerService.produce(LoadEntity.builder().idConta(getIdConta(j)).quantidadeDias(qtdDias).dataFim(termino).build());
+            producerService.produce(
+                LoadEntity
+                    .builder()
+                    .idConta(
+                        idPrevisivel? 
+                        getIdConta(j):
+                        UUID.randomUUID()
+                    )
+                    .quantidadeDias(qtdDias)
+                    .dataFim(termino)
+                    .build());
         }
     }
 }

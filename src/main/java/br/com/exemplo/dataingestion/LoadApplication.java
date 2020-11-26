@@ -27,6 +27,11 @@ public class LoadApplication implements CommandLineRunner {
 	@Value("${dias.ultimo}")
 	private LocalDate termino;
 
+	@Value("${contas.id.previsiviel:false}")
+	private boolean idPrevisivel;
+
+	@Value("${contas.id.inicial:0}")
+	private int idInicial;
 
 	private final GenerateLoadController generateLoadController;
 
@@ -37,7 +42,7 @@ public class LoadApplication implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 		log.info("Iniciando a produção de {} contas com {} dias retroativos à partir de {}", contas, dias, termino);
-		generateLoadController.geraEvento(contas, dias, termino);
+		generateLoadController.geraEvento(contas, dias, termino, idPrevisivel, idInicial);
 		log.info("Liberando comando da aplicação");
 	}
 }

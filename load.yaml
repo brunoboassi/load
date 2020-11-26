@@ -6,7 +6,7 @@ metadata:
     app: load
   namespace: load
 spec:
-  parallelism: 5
+  parallelism: 1
   template:
     spec:
       serviceAccountName: statement-demo
@@ -32,11 +32,16 @@ spec:
               name: kafka
               key: bootstrap
         - name: TOTAL_CONTAS
-          value: "266670"
+          value: "4800000"
+          #value: "38709660" #
         - name: DIAS_POR_CONTA
-          value: "30"
+          value: "213"
         - name: ULTIMO_DIA
-          value: "2020-10-31"
+          value: "2020-05-31"
+        - name: ID_PREVISIVEL
+          value: "true"
+        - name: ID_INICIAL
+          value: "0"
         - name: POD_NAME
           valueFrom:
             fieldRef:
