@@ -1,0 +1,54 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: load-
+  labels:
+    app: load
+  namespace: load
+spec:
+  parallelism: 1
+  template:
+    spec:
+      serviceAccountName: statement-demo
+      containers:
+      - name: load
+        image: 837108680928.dkr.ecr.us-east-1.amazonaws.com/load:latest
+        imagePullPolicy: Always
+        volumeMounts:
+        - mountPath: /tmp/application-aws.properties
+          name: config
+          subPath: application-aws.properties
+        resources:
+          limits:
+            memory: "1Gi"
+            cpu: 1
+          requests:
+            memory: "1Gi"
+            cpu: 1
+        env:
+        - name: KAFKA_BOOTSTRAP
+          valueFrom:
+            configMapKeyRef:
+              name: kafka
+              key: bootstrap
+        - name: TOTAL_CONTAS
+          value: "4800000"
+          #value: "38709660" #
+        - name: DIAS_POR_CONTA
+          value: "213"
+        - name: ULTIMO_DIA
+          value: "2020-05-31"
+        - name: ID_PREVISIVEL
+          value: "true"
+        - name: ID_INICIAL
+          value: "0"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+      volumes:
+      - configMap:
+          name: application.properties
+        name: config
+      restartPolicy: Never
+  backoffLimit: 0
